@@ -29,7 +29,9 @@
       <div class="blog-card">
         <h2><%= item.title %></h2>
         <p><%= item.content %></p>
-        <p><%= item.created_at %></p>
+
+        <% let date = new Date(item.created_at); %>
+        <p><%= formatCustomDate(date) %></p>
       </div>
 
       <% }) %>

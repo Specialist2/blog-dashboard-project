@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 const mysql = require("mysql");
+const formatCustomDate = require("./utils.js");
 const connection = mysql.createConnection({
   host: "127.0.0.1",
   port: 3306,
@@ -44,7 +45,10 @@ app.get("/posts", (req, res) => {
     if (error) {
       res.json(error);
     } else {
-      res.render("posts.ejs", { blogs: posts });
+      res.render("posts.ejs", {
+        blogs: posts,
+        formatCustomDate: formatCustomDate,
+      });
     }
   });
 });
