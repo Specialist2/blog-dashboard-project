@@ -1,7 +1,8 @@
 const express = require("express");
 const app = express();
 const mysql = require("mysql");
-const formatCustomDate = require("./utils.js");
+const formatCustomDate = require("./utils.js"); // custom date format - import
+
 const connection = mysql.createConnection({
   host: "127.0.0.1",
   port: 3306,
