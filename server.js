@@ -22,6 +22,8 @@ function checkForProtectedRoutes(req, res, next) {
 }
 // middleware functions --- use cases in express js web server
 app.use(checkForProtectedRoutes);
+// serve static files - public folder - css, js, images, videos, etc.
+app.use(express.static("public")); 
 
 // routes
 app.get("/", (req, res) => {
