@@ -1,6 +1,8 @@
 const express = require("express");
 const app = express();
 const mysql = require("mysql");
+const sessionManager = require("express-session");
+
 const formatCustomDate = require("./utils.js"); // custom date format - import
 
 const connection = mysql.createConnection({
@@ -10,23 +12,33 @@ const connection = mysql.createConnection({
   password: "",
   database: "blog_db",
 });
+// set up session manager --- secret is a unique word
+app.use(
+  sessionManager({
+    secret: "secret",
+    resave: false,
+    saveUninitialized: false,
+  })
+);
 
 const protectedRoutes = ["/profile", "/dashboard"];
-
 function checkForProtectedRoutes(req, res, next) {
-  if (protectedRoutes.includes(req.url)) {
-    res.end("You have to be logged in");
+  if (protectedRoutes.includes(req.url && !req.session?.user)) {
+    res.redirect("/login");
   } else {
+    res.locals.user = req.session?.user;
     next();
   }
 }
 // middleware functions --- use cases in express js web server
 app.use(checkForProtectedRoutes);
 // serve static files - public folder - css, js, images, videos, etc.
-app.use(express.static("public")); 
+app.use(express.static("public"));
 
 // routes
 app.get("/", (req, res) => {
+  console.log(req.headers);
+
   res.render("home.ejs");
 });
 
@@ -37,13 +49,45 @@ app.get("/dashboard", (req, res) => {
 app.get("/login", (req, res) => {
   res.render("login.ejs");
 });
+app.post("/login", express.urlencoded({ extended: true }), (req, res) => {
+  const { email, password } = req.body;
+  connection.query(
+    `SELECT * FROM users WHERE email = "${email}"`,
+    (err, data) => {
+      console.log(data); // [] or [{...}]
+      if (data.length < 1) {
+        console.log("User not found");
+        res.send("User not found for that email");
+      } else {
+        if (data[0].password_hash === password) {
+          console.log("succesful login");
+          req.session.user = data[0]; // creating a session for the user -- create a unique session id for the user
+          res.redirect("/dashboard");
+        } else {
+          console.log("wrong password");
+          res.send("wrong password provided ");
+        }
+      }
+    }
+  );
+});
+
+// Route to destroy session (logout)
+app.get("/logout", (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      return res.send("Error logging out.");
+    }
+    res.send("Logged out successfully.");
+  });
+});
+
 app.get("/register", (req, res) => {
   res.render("register.ejs");
 });
 app.get("/posts", (req, res) => {
   // show all posts with posible actions like (edit, delete, hide, view post, view post comments, view likes and much more) - the actions will be in form of a links or buttons.
   //   192.168.1.46:8000/posts
-
   connection.query("SELECT * FROM posts", (error, posts) => {
     if (error) {
       res.json(error);

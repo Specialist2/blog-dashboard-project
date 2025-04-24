@@ -5,13 +5,17 @@
     <a href="/posts">Posts</a>
     <a href="/newPost">+ New Post</a>
     <a href="/dashboard">Dashboard</a>
-    <a href="/profile">Profile</a>
+
+    <% if(locals.user){ %>
+    <a href="/profile"> <%= locals.user.username %> </a>
+    <a href="/logout">Logout</a>
+    <%}else{%>
     <a href="/register">Register</a>
     <a href="/login">Login</a>
-    <a href="/logout">Logout</a>
+    <% } %>
   </nav>
 </header>
-
+<!-- Spagheti code -->
 <style>
   header {
     background-color: #000;
